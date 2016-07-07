@@ -1,0 +1,29 @@
+{
+  "name": "nodebb-plugin-sso-keycloak",
+  "version": "0.0.1",
+  "description": "NodeBB Keycloak SSO",
+  "main": "library.js",
+  "keywords": [
+    "nodebb",
+    "plugin",
+    "Keycloak",
+    "sso",
+    "single sign on",
+    "login",
+    "registration"
+  ],
+  "author": {
+    "name": "Rickard Östergård",
+    "email": ""
+  },
+  "license": "MIT",
+  "readme": "",
+  "readmeFilename": "README.md",
+  "dependencies": {
+    "passport-keycloak": "git+https://github.com/rckrdstrgrd/passport-keycloak.git"
+  },
+  "nbbpm": {
+    "compatibility": "^1.0.1",
+    "index": false
+  }
+}

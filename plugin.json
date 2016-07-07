@@ -1,0 +1,33 @@
+{
+    "id": "nodebb-plugin-sso-openidconnect",
+    "name": "NodeBB SSO Open ID Connect ",
+    "description": "NodeBB Plugin that allows users to login/register via any configured Open ID connect provider.",
+    "url": "https://github.com/rckrdstrgrd/nodebb-plugin-sso-openidconnect",
+    "library": "./library.js",
+    "hooks": [{
+        "hook": "static:app.load",
+        "method": "init"
+    }, {
+        "hook": "filter:admin.header.build",
+        "method": "addAdminNavigation"
+    }, {
+        "hook": "static:user.delete",
+        "method": "deleteUserData"
+    }, {
+        "hook": "filter:auth.init",
+        "method": "getStrategy"
+    }, {
+        "hook": "filter:config.get",
+        "method": "getClientConfig"
+    }],
+    "staticDirs": {
+        "static": "./static"
+    },
+    "scripts": [
+        "static/lib/main.js"
+    ],
+    "acpScripts": [
+        "static/lib/admin.js"
+    ],
+    "templates": "static/templates"
+}
