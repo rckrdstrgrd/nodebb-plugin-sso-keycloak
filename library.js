@@ -235,12 +235,13 @@
                     configOK = false;
                 }
                 if (key === 'keycloak-config') {
-                    keycloakConfig = JSON.parse(settings[key]);
-                    if (!keycloakConfig || keycloakConfig.error) {
-                        let errorMessage = '[sso-keycloak] invalid keycloak configuration, sso-keycloak is disabled.';
-                        winston.error(errorMessage);
-                        configOK = false;
-                    } else {
+                    if (keycloakConfig) {
+                        try {
+                            keycloakConfig = JSON.parse(settings[key]);
+                        } catch (e) {
+                            winston.error('[sso-keycloak] invalid keycloak configuration, sso-keycloak is disabled.');
+                            configOK = false;
+                        }
                         settings[key] = keycloakConfig;
                     }
                 }
