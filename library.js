@@ -227,24 +227,27 @@
                 return callback(err);
             }
             let keycloakConfig;
+            let configOK = true;
             'callback-url|keycloak-config'.split('|').forEach(key => {
                 if (!settings[key]) {
                     let errorMessage = '[sso-keycloak] %s configuration value not found, sso-keycloak is disabled.';
                     winston.error(format(errorMessage, key));
-                    return callback(new Error(errorMessage));
+                    configOK = false;
                 }
                 if (key === 'keycloak-config') {
                     keycloakConfig = JSON.parse(settings[key]);
                     if (!keycloakConfig || keycloakConfig.error) {
                         let errorMessage = '[sso-keycloak] invalid keycloak configuration, sso-keycloak is disabled.';
                         winston.error(errorMessage);
-                        return callback(new Error(errorMessage));
+                        configOK = false;
                     } else {
                         settings[key] = keycloakConfig;
                     }
                 }
             });
-
+            if (!configOK) {
+                return callback(new Error(errorMessage));
+            }
             winston.info('[sso-keycloak] Settings OK');
             plugin.settings = _.defaults(_.pick(settings, Boolean), plugin.settings);
             plugin.ready = true;
