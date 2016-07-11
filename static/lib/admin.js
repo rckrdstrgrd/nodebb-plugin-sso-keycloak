@@ -1,27 +1,22 @@
 'use strict';
-/* globals $, app, socket */
+/* globals $, define, socket */
 
 define('admin/plugins/sso-keycloak', ['settings'], function(Settings) {
 
-	var ACP = {};
+    var ACP = {};
 
-	ACP.init = function() {
-		Settings.load('sso-keycloak', $('.sso-keycloak-settings'));
+    ACP.init = function() {
 
-		$('#save').on('click', function() {
-			Settings.save('sso-keycloak', $('.sso-keycloak-settings'), function() {
-				app.alert({
-					type: 'success',
-					alert_id: 'sso-keycloak-saved',
-					title: 'Settings Saved',
-					message: 'Please reload your NodeBB to apply these settings',
-					clickfn: function() {
-						socket.emit('admin.reload');
-					}
-				});
-			});
-		});
-	};
+        var wrapper = $('#sso-keycloak-settings');
+        Settings.sync('sso-keycloak', wrapper);
 
-	return ACP;
+        $('#save').on('click', function() {
+            event.preventDefault();
+            Settings.persist('sso-keycloak', wrapper, function() {
+                socket.emit('admin.settings.syncSsoKeycloak');
+            });
+        });
+    };
+
+    return ACP;
 });

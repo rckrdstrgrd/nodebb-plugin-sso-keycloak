@@ -1,8 +1,8 @@
 {
-    "id": "nodebb-plugin-sso-openidconnect",
+    "id": "nodebb-plugin-sso-keycloak",
     "name": "NodeBB SSO Open ID Connect ",
     "description": "NodeBB Plugin that allows users to login/register via any configured Open ID connect provider.",
-    "url": "https://github.com/rckrdstrgrd/nodebb-plugin-sso-openidconnect",
+    "url": "https://github.com/rckrdstrgrd/nodebb-plugin-sso-keycloak",
     "library": "./library.js",
     "hooks": [{
         "hook": "static:app.load",
@@ -16,6 +16,9 @@
     }, {
         "hook": "filter:auth.init",
         "method": "getStrategy"
+    }, {
+        "hook": "static:user.loggedOut",
+        "method": "logout"
     }, {
         "hook": "filter:config.get",
         "method": "getClientConfig"
