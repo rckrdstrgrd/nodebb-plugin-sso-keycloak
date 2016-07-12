@@ -11,9 +11,8 @@
         format = require('util').format,
         SocketAdmin = module.parent.require('./socket.io/admin'),
         Settings = module.parent.require('./settings'),
-        Strategy = require('passport-keycloak');
-
-
+        Strategy = require('passport-keycloak'),
+        nconf = module.parent.require('nconf');
 
     var authenticationController = module.parent.require('./controllers/authentication');
 
@@ -81,21 +80,23 @@
                             db.sessionStore.get(sessionId, function(err, sessionObj) {
                                 if (err) {
                                     response.send('err')
-                                };
-                                var uid = sessionObj.passport.user;
-                                async.parallel([
-                                    function(next) {
-                                        if (sessionObj && sessionObj.meta && sessionObj.meta.uuid) {
-                                            db.deleteObjectField('uid:' + uid + ':sessionUUID:sessionId', sessionObj.meta.uuid, next);
-                                        } else {
-                                            next();
-                                        }
-                                    },
-                                    async.apply(db.sortedSetRemove, 'uid:' + uid + ':sessions', sessionId),
-                                    async.apply(db.sessionStore.destroy.bind(db.sessionStore), sessionId)
-                                ], function() {
-                                    winston.info('Revoked user session: ' + sessionId);
-                                });
+                                }
+                                if (sessionObj && sessionObj.passport) {
+                                    var uid = sessionObj.passport.user;
+                                    async.parallel([
+                                        function(next) {
+                                            if (sessionObj && sessionObj.meta && sessionObj.meta.uuid) {
+                                                db.deleteObjectField('uid:' + uid + ':sessionUUID:sessionId', sessionObj.meta.uuid, next);
+                                            } else {
+                                                next();
+                                            }
+                                        },
+                                        async.apply(db.sortedSetRemove, 'uid:' + uid + ':sessions', sessionId),
+                                        async.apply(db.sessionStore.destroy.bind(db.sessionStore), sessionId)
+                                    ], function() {
+                                        winston.info('Revoked user session: ' + sessionId);
+                                    });
+                                }
                             });
                             ++seen;
                             if (seen === sessionIDs.length) {
@@ -145,7 +146,6 @@
                 scope: (plugin.settings.scope || '').split(','),
                 successUrl: '/'
             });
-            winston.info(strategies);
             callback(null, strategies);
         } else {
             callback(new Error('[sso-keycloak] Configuration is invalid'));
@@ -171,10 +171,34 @@
                 return callback(err);
             }
 
+            var addToAdmin = function(isAdmin, uid, cb) {
+                if (isAdmin) {
+                    Groups.join('administrators', uid, function(err) {
+                        if (err) {
+                            cb(err);
+                        }
+                        cb(null, {
+                            uid: uid
+                        });
+                    });
+                } else {
+                    Groups.leave('administrators', uid, function(err) {
+                        if (err) {
+                            cb(err);
+                        }
+                        cb(null);
+                    });
+                }
+            };
+
             if (uid !== null) {
-                // Existing User
-                callback(null, {
-                    uid: uid
+                addToAdmin(payload.isAdmin, uid, function(err) {
+                    if (err) {
+                        callback(err);
+                    }
+                    callback(null, {
+                        uid: uid
+                    });
                 });
             } else {
                 // New User
@@ -183,20 +207,14 @@
                     User.setUserField(uid, plugin.name + 'Id', payload.keycloakId);
                     db.setObjectField(plugin.name + 'Id:uid', payload.keycloakId, uid);
 
-                    if (payload.isAdmin) {
-                        Groups.join('administrators', uid, function(err) {
-                            if (err) {
-                                callback(err);
-                            }
-                            callback(null, {
-                                uid: uid
-                            });
-                        });
-                    } else {
+                    addToAdmin(payload.isAdmin, uid, function(err) {
+                        if (err) {
+                            callback(err);
+                        }
                         callback(null, {
                             uid: uid
                         });
-                    }
+                    });
                 };
 
                 User.getUidByEmail(payload.email, function(err, uid) {
@@ -291,6 +309,7 @@
         };
         next(null, config);
     };
+
 
     module.exports = plugin;
 }(module));
