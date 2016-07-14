@@ -304,9 +304,11 @@
     };
 
     plugin.getClientConfig = function(config, next) {
-        config.keycloak = {
-            logoutUrl: plugin.keycloakConfig['auth-server-url'] + '/realms/' + plugin.keycloakConfig['realm'] + '/protocol/openid-connect/logout'
-        };
+       if (plugin.keycloakConfig) {
+            config.keycloak = {
+                logoutUrl: plugin.keycloakConfig['auth-server-url'] + '/realms/' + plugin.keycloakConfig['realm'] + '/protocol/openid-connect/logout'
+            };
+        }
         next(null, config);
     };
 
