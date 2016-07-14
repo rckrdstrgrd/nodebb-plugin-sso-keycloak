@@ -74,12 +74,12 @@
                 var payload = JSON.parse(new Buffer(parts[1], 'base64').toString());
                 if (payload.action === 'LOGOUT') {
                     var sessionIDs = payload.adapterSessionIds;
-                    if (sessionIDs && sessionIDs.length > 0 && payload.id) {
+                    if (sessionIDs && sessionIDs.length > 0) {
                         let seen = 0;
                         sessionIDs.forEach(sessionId => {
                             db.sessionStore.get(sessionId, function(err, sessionObj) {
                                 if (err) {
-                                    response.send('err')
+                                    winston.verbose('[sso-keycloak] user logout unsucessful' +err.message);
                                 }
                                 if (sessionObj && sessionObj.passport) {
                                     var uid = sessionObj.passport.user;
@@ -115,7 +115,7 @@
 
     plugin.getStrategy = function(strategies, callback) {
         if (plugin.ready && plugin.keycloakConfig) {
-            passport.use(plugin.name, new Strategy({
+            plugin.strategy = new Strategy({
                 callbackURL: plugin.settings['callback-url'],
                 keycloakConfig: plugin.keycloakConfig
             }, function(userData, req, done) {
@@ -136,8 +136,8 @@
                         done(null, user);
                     });
                 });
-
-            }));
+            });
+            passport.use(plugin.name, plugin.strategy);
             strategies.push({
                 name: plugin.name,
                 url: '/auth/' + plugin.name,
