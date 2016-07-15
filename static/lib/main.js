@@ -13,17 +13,15 @@
 
     $(document).ready(function() {
         app.logout = function() {
-            require(['csrf'], function(csrf) {
                 $.ajax(config.relative_path + '/logout', {
                     type: 'POST',
                     headers: {
-                        'x-csrf-token': csrf.get()
+                        'x-csrf-token': config.csrf_token
                     },
                     success: function() {
                         window.location.href = config.keycloak.logoutUrl + '?redirect_uri=' + encodeURIComponent(window.location.origin + '/');
                     }
                 });
-            });
         };
     });
 }());
