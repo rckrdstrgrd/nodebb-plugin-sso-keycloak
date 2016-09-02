@@ -14,11 +14,6 @@
 				<label>Admin URL</label>
 				<textarea class="form-control" rows="1" data-key="admin-url"></textarea>
 			</div>
-			<div class="form-group">
-				<label>Cookie name</label>
-				<textarea class="form-control" rows="1" data-key="cookie-name"></textarea>
-			</div>
-			
 		</div>
 	</div>
 </form>

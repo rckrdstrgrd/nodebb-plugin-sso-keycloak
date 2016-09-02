@@ -5,9 +5,6 @@
     "url": "https://github.com/rckrdstrgrd/nodebb-plugin-sso-keycloak",
     "library": "./library.js",
     "hooks": [{
-        "hook": "static:app.preload",
-        "method": "addMiddleware"
-    }, {
         "hook": "static:app.load",
         "method": "init"
     }, {

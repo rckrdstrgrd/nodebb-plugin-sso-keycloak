@@ -50,6 +50,7 @@
             });
         });
     };
+
     plugin.logout = function(data, callback) {
         var req = data.req;
         if (req.session) {
@@ -79,7 +80,7 @@
                         sessionIDs.forEach(sessionId => {
                             db.sessionStore.get(sessionId, function(err, sessionObj) {
                                 if (err) {
-                                    winston.verbose('[sso-keycloak] user logout unsucessful' +err.message);
+                                    winston.verbose('[sso-keycloak] user logout unsucessful' + err.message);
                                 }
                                 if (sessionObj && sessionObj.passport) {
                                     var uid = sessionObj.passport.user;
@@ -146,10 +147,10 @@
                 scope: (plugin.settings.scope || '').split(','),
                 successUrl: '/'
             });
-            callback(null, strategies);
         } else {
-            callback(new Error('[sso-keycloak] Configuration is invalid'));
+            winston.error('[sso-keycloak] Configuration is invalid, plugin will not be actived.')
         }
+        callback(null, strategies);
     };
 
     plugin.parseUserReturn = function(userData, callback) {
@@ -168,7 +169,8 @@
     plugin.login = function(payload, callback) {
         plugin.getUidByOAuthid(payload.keycloakId, function(err, uid) {
             if (err) {
-                return callback(err);
+                callback(err);
+                return;
             }
 
             var addToAdmin = function(isAdmin, uid, cb) {
@@ -210,6 +212,7 @@
                     addToAdmin(payload.isAdmin, uid, function(err) {
                         if (err) {
                             callback(err);
+                            return;
                         }
                         callback(null, {
                             uid: uid
@@ -219,7 +222,8 @@
 
                 User.getUidByEmail(payload.email, function(err, uid) {
                     if (err) {
-                        return callback(err);
+                        callback(err);
+                        return;
                     }
 
                     if (!uid) {
@@ -228,7 +232,8 @@
                             email: payload.email
                         }, function(err, uid) {
                             if (err) {
-                                return callback(err);
+                                callback(err);
+                                return;
                             }
                             success(uid);
                         });
@@ -278,13 +283,15 @@
             }
         });
         if (!configOK) {
-            return callback(new Error('failed to load settings'));
+            callback(new Error('failed to load settings'));
+            return;
         }
         try {
             plugin.keycloakConfig = JSON.parse(settings['keycloak-config']);
         } catch (e) {
             winston.error('[sso-keycloak] invalid keycloak configuration, sso-keycloak is disabled.');
-            return callback(new Error('invalid keycloak configuration'));
+            callback(new Error('invalid keycloak configuration'));
+            return;
         }
         winston.info('[sso-keycloak] Settings OK');
         plugin.settings = settings;
@@ -304,7 +311,7 @@
     };
 
     plugin.getClientConfig = function(config, next) {
-       if (plugin.keycloakConfig) {
+        if (plugin.keycloakConfig) {
             config.keycloak = {
                 logoutUrl: plugin.keycloakConfig['auth-server-url'] + '/realms/' + plugin.keycloakConfig['realm'] + '/protocol/openid-connect/logout'
             };
