@@ -11,8 +11,7 @@
         format = require('util').format,
         SocketAdmin = module.parent.require('./socket.io/admin'),
         Settings = module.parent.require('./settings'),
-        Strategy = require('passport-keycloak'),
-        nconf = module.parent.require('nconf');
+        Strategy = require('passport-keycloak');
 
     var authenticationController = module.parent.require('./controllers/authentication');
 
@@ -57,7 +56,7 @@
             delete req.session[Strategy.SESSION_KEY];
         }
         callback();
-    }
+    };
 
     plugin.adminLogout = function(request, response) {
         var data = '';
@@ -124,12 +123,7 @@
                     if (err) {
                         return done(err);
                     }
-                    plugin.login({
-                        keycloakId: profile.id,
-                        handle: profile.handle || profile.displayName,
-                        email: profile.email,
-                        isAdmin: profile.isAdmin
-                    }, function(err, user) {
+                    plugin.login(profile, function(err, user) {
                         if (err) {
                             return done(err);
                         }
@@ -148,26 +142,23 @@
                 successUrl: '/'
             });
         } else {
-            winston.error('[sso-keycloak] Configuration is invalid, plugin will not be actived.')
+            winston.error('[sso-keycloak] Configuration is invalid, plugin will not be actived.');
         }
         callback(null, strategies);
     };
 
     plugin.parseUserReturn = function(userData, callback) {
-        var profile = {
-            id: userData.sub,
-            username: userData.preferred_username,
-            displayName: userData.given_name,
-            given_name: userData.given_name,
-            family_name: userData.family_name,
-            email: userData.email
-        };
-        profile.isAdmin = userData.isAdmin || false;
+        var profile = {};
+        for (var key in plugin.tokenMapper) {
+            if (plugin.tokenMapper.hasOwnProperty(key)) {
+                profile.key = userData[plugin.tokenMapper[key]];
+            }
+        }
         callback(null, profile);
     };
 
     plugin.login = function(payload, callback) {
-        plugin.getUidByOAuthid(payload.keycloakId, function(err, uid) {
+        plugin.getUidByOAuthid(payload.id, function(err, uid) {
             if (err) {
                 callback(err);
                 return;
@@ -206,8 +197,13 @@
                 // New User
                 var success = function(uid) {
                     // Save provider-specific information to the user
-                    User.setUserField(uid, plugin.name + 'Id', payload.keycloakId);
-                    db.setObjectField(plugin.name + 'Id:uid', payload.keycloakId, uid);
+                    User.setUserField(uid, plugin.name + 'Id', payload.id);
+                    db.setObjectField(plugin.name + 'Id:uid', payload.id, uid);
+
+                    if (payload.picture) {
+                        user.setUserField(uid, 'uploadedpicture', picture);
+                        user.setUserField(uid, 'picture', picture);
+                    }
 
                     addToAdmin(payload.isAdmin, uid, function(err) {
                         if (err) {
@@ -228,7 +224,7 @@
 
                     if (!uid) {
                         User.create({
-                            username: payload.handle,
+                            username: payload.displayName,
                             email: payload.email
                         }, function(err, uid) {
                             if (err) {
@@ -275,7 +271,7 @@
         let configOK = true;
         let errorMessage = '[sso-keycloak] %s configuration value not found, sso-keycloak is disabled.';
         let formattedErrMessage = '';
-        'admin-url|callback-url|keycloak-config'.split('|').forEach(key => {
+        'admin-url|callback-url|keycloak-config|token-mapper'.split('|').forEach(key => {
             if (!settings[key]) {
                 formattedErrMessage = format(errorMessage, key);
                 winston.error(formattedErrMessage);
@@ -293,6 +289,22 @@
             callback(new Error('invalid keycloak configuration'));
             return;
         }
+
+        try {
+            plugin.tokenMapper = JSON.parse(settings['token-mapper']);
+        } catch (e) {
+            winston.error('[sso-keycloak] Token mapper, sso-keycloak is disabled.');
+            callback(new Error('invalid keycloak configuration'));
+            return;
+        }
+        'id|username|displayName|isAdmin'.split('|').forEach(key => {
+            if (!settings[key]) {
+                formattedErrMessage = format(errorMessage, key);
+                winston.error(formattedErrMessage);
+                configOK = false;
+            }
+        });
+
         winston.info('[sso-keycloak] Settings OK');
         plugin.settings = settings;
         plugin.ready = true;

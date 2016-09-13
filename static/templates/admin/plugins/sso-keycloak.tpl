@@ -14,6 +14,10 @@
 				<label>Admin URL</label>
 				<textarea class="form-control" rows="1" data-key="admin-url"></textarea>
 			</div>
+			<div class="form-group">
+  				<label>Token mapping</label>
+  				<textarea class="form-control" rows="8" data-key="token-mapper"></textarea>
+			</div>
 		</div>
 	</div>
 </form>
