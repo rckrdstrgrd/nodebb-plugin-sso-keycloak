@@ -298,7 +298,7 @@
             return;
         }
         'id|username|displayName|isAdmin'.split('|').forEach(key => {
-            if (!settings[key]) {
+            if (!plugin.tokenMapper[key]) {
                 formattedErrMessage = format(errorMessage, key);
                 winston.error(formattedErrMessage);
                 configOK = false;
