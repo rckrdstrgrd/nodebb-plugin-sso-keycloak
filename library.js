@@ -224,7 +224,7 @@
 
                     if (!uid) {
                         User.create({
-                            username: payload.displayName,
+                            username: payload.username,
                             email: payload.email
                         }, function(err, uid) {
                             if (err) {
@@ -297,7 +297,7 @@
             callback(new Error('invalid keycloak configuration'));
             return;
         }
-        'id|username|displayName|isAdmin'.split('|').forEach(key => {
+        'id|username|email|isAdmin'.split('|').forEach(key => {
             if (!plugin.tokenMapper[key]) {
                 formattedErrMessage = format(errorMessage, key);
                 winston.error(formattedErrMessage);
