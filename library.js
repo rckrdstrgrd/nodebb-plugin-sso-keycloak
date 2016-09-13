@@ -165,6 +165,7 @@
             }
 
             var addToAdmin = function(isAdmin, uid, cb) {
+                isAdmin = isAdmin === 'true';
                 if (isAdmin) {
                     Groups.join('administrators', uid, function(err) {
                         if (err) {
