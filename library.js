@@ -151,7 +151,7 @@
         var profile = {};
         for (var key in plugin.tokenMapper) {
             if (plugin.tokenMapper.hasOwnProperty(key)) {
-                profile.key = userData[plugin.tokenMapper[key]];
+                profile[key] = userData[plugin.tokenMapper[key]];
             }
         }
         callback(null, profile);
