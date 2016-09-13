@@ -17,7 +17,7 @@
 
     var plugin = {
         ready: false,
-        name: 'keycloak'
+        name: 'sso'
     };
 
     SocketAdmin.settings.syncSsoKeycloak = function() {
