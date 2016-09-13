@@ -202,8 +202,8 @@
                     db.setObjectField(plugin.name + 'Id:uid', payload.id, uid);
 
                     if (payload.picture) {
-                        user.setUserField(uid, 'uploadedpicture', payload.picture);
-                        user.setUserField(uid, 'picture', payload.picture);
+                        User.setUserField(uid, 'uploadedpicture', payload.picture);
+                        User.setUserField(uid, 'picture', payload.picture);
                     }
 
                     addToAdmin(payload.isAdmin, uid, function(err) {
