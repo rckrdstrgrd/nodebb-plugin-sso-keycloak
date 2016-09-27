@@ -74,6 +74,7 @@
                 response.send('ok');
                 return;
             }
+            console.log(data);
             try {
                 var parts = data.split('.');
                 var payload = JSON.parse(new Buffer(parts[1], 'base64').toString());
