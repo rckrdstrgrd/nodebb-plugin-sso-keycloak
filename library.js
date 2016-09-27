@@ -43,7 +43,11 @@
                     return;
                 }
                 plugin.settings = settings.get();
-                var adminUrl = plugin.settings['admin-url'] + 'k_logout';
+                var adminUrl = plugin.settings['admin-url']
+                if (adminUrl[adminUrl.length - 1] !== '/') {
+                    adminUrl += '/';
+                }
+                adminUrl += 'k_logout';
                 router.post(adminUrl, plugin.adminLogout);
                 callback();
             });
@@ -59,6 +63,7 @@
     };
 
     plugin.adminLogout = function(request, response) {
+        console.log(request.body);
         var data = '';
         request.on('data', d => {
             data += d.toString();
@@ -104,7 +109,7 @@
                             }
                         });
                     }
-                    return;
+                    return response.status(500).send('User logout unsucessful.');
                 }
             } catch (err) {
                 response.status(500).send('User logout unsucessful.');
