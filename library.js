@@ -63,59 +63,75 @@
     };
 
     plugin.adminLogout = function(request, response) {
-        console.log(request.body);
-        var data = '';
-        request.on('data', d => {
-            data += d.toString();
-        });
 
-        request.on('end', function() {
-            if (data === '') {
-                response.send('ok');
-                return;
+        function doLogout(data, callback) {
+            if (typeof data !== 'string' || data.indexOf('.') < 0) {
+                return callback(new Error('invalid payload'));
             }
-            console.log(data);
             try {
                 var parts = data.split('.');
                 var payload = JSON.parse(new Buffer(parts[1], 'base64').toString());
-                if (payload.action === 'LOGOUT') {
-                    var sessionIDs = payload.adapterSessionIds;
-                    if (sessionIDs && sessionIDs.length > 0) {
-                        let seen = 0;
-                        sessionIDs.forEach(sessionId => {
-                            db.sessionStore.get(sessionId, function(err, sessionObj) {
-                                if (err) {
-                                    winston.verbose('[sso-keycloak] user logout unsucessful' + err.message);
-                                }
-                                if (sessionObj && sessionObj.passport) {
-                                    var uid = sessionObj.passport.user;
-                                    async.parallel([
-                                        function(next) {
-                                            if (sessionObj && sessionObj.meta && sessionObj.meta.uuid) {
-                                                db.deleteObjectField('uid:' + uid + ':sessionUUID:sessionId', sessionObj.meta.uuid, next);
-                                            } else {
-                                                next();
-                                            }
-                                        },
-                                        async.apply(db.sortedSetRemove, 'uid:' + uid + ':sessions', sessionId),
-                                        async.apply(db.sessionStore.destroy.bind(db.sessionStore), sessionId)
-                                    ], function() {
-                                        winston.info('Revoked user session: ' + sessionId);
-                                    });
-                                }
-                            });
-                            ++seen;
-                            if (seen === sessionIDs.length) {
-                                response.send('ok');
+            } catch (err) {
+                return callback(new Error('User logout unsucessful.'));
+            }
+            if (payload.action === 'LOGOUT') {
+                var sessionIDs = payload.adapterSessionIds;
+                if (sessionIDs && sessionIDs.length > 0) {
+                    let seen = 0;
+                    sessionIDs.forEach(sessionId => {
+                        db.sessionStore.get(sessionId, function(err, sessionObj) {
+                            if (err) {
+                                winston.verbose('[sso-keycloak] user logout unsucessful' + err.message);
+                                return callback(new Error('User logout unsucessful.'));
+                            }
+                            if (sessionObj && sessionObj.passport) {
+                                var uid = sessionObj.passport.user;
+                                async.parallel([
+                                    function(next) {
+                                        if (sessionObj && sessionObj.meta && sessionObj.meta.uuid) {
+                                            db.deleteObjectField('uid:' + uid + ':sessionUUID:sessionId', sessionObj.meta.uuid, next);
+                                        } else {
+                                            next();
+                                        }
+                                    },
+                                    async.apply(db.sortedSetRemove, 'uid:' + uid + ':sessions', sessionId),
+                                    async.apply(db.sessionStore.destroy.bind(db.sessionStore), sessionId)
+                                ], function() {
+                                    winston.info('Revoked user session: ' + sessionId);
+                                });
                             }
                         });
-                    }
-                    return response.status(500).send('User logout unsucessful.');
+                        ++seen;
+                        if (seen === sessionIDs.length) {
+                            return callback(null, 'ok');
+                        }
+                    });
                 }
-            } catch (err) {
-                response.status(500).send('User logout unsucessful.');
+                return callback(new Error('User logout unsucessful.'));
             }
-            response.send('ok');
+        }
+
+        if (request.body) {
+            return doLogout(reqData, function(err, result) {
+                if (err) {
+                    return response.send(err.message);
+                }
+                response.send(result);
+            });
+        }
+
+        var reqData = '';
+        request.on('data', d => {
+            reqData += d.toString();
+        });
+
+        request.on('end', function() {
+            return doLogout(reqData, function(err, result) {
+                if (err) {
+                    return response.send(err.message);
+                }
+                response.send(result);
+            });
         });
     };
 
