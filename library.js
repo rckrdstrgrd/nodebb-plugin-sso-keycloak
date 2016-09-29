@@ -81,8 +81,7 @@
                     sessionIDs.forEach(sessionId => {
                         db.sessionStore.get(sessionId, function(err, sessionObj) {
                             if (err) {
-                                winston.verbose('[sso-keycloak] user logout unsucessful' + err.message);
-                                return callback(new Error('User logout unsucessful.'));
+                                winston.info('[sso-keycloak] user logout unsucessful' + err.message);
                             }
                             if (sessionObj && sessionObj.passport) {
                                 var uid = sessionObj.passport.user;
