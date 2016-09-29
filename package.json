@@ -20,7 +20,7 @@
   "readme": "",
   "readmeFilename": "README.md",
   "dependencies": {
-    "passport-keycloak": "git+https://github.com/rckrdstrgrd/passport-keycloak.git"
+    "passport-keycloak": "rckrdstrgrd/passport-keycloak"
   },
   "nbbpm": {
     "compatibility": "^1.0.1",
