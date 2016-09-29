@@ -106,13 +106,18 @@
                             return callback(null, 'ok');
                         }
                     });
+                } else {
+                    return callback(new Error('User logout unsucessful.'));
                 }
+            } else {
                 return callback(new Error('User logout unsucessful.'));
             }
         }
 
-        if (request.body) {
-            return doLogout(reqData, function(err, result) {
+        if (request.body && typeof request.body === 'object') {
+            var data = Object.keys(request.body);
+            data = data[0] || '';
+            return doLogout(data, function(err, result) {
                 if (err) {
                     return response.send(err.message);
                 }
