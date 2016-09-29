@@ -65,6 +65,7 @@
     plugin.adminLogout = function(request, response) {
 
         function doLogout(data, callback) {
+            console.log(data);
             if (typeof data !== 'string' || data.indexOf('.') < 0) {
                 return callback(new Error('invalid payload'));
             }
