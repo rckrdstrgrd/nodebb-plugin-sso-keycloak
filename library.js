@@ -44,6 +44,9 @@
                 }
                 plugin.settings = settings.get();
                 var adminUrl = plugin.settings['admin-url']
+                if (adminUrl[0] !== '/') {
+                    adminUrl = '/'+adminUrl;
+                }
                 if (adminUrl[adminUrl.length - 1] !== '/') {
                     adminUrl += '/';
                 }
@@ -112,20 +115,7 @@
                 return callback(new Error('User logout unsucessful.'));
             }
         }
-
-        if (request.body && typeof request.body === 'object') {
-            console.log(request.body);
-            var data = Object.keys(request.body);
-            console.log(data);
-            data = data[0] || '';
-            return doLogout(data, function(err, result) {
-                if (err) {
-                    return response.send(err.message);
-                }
-                response.send(result);
-            });
-        }
-
+        
         var reqData = '';
         request.on('data', d => {
             reqData += d.toString();
