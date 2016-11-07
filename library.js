@@ -219,6 +219,10 @@
                     User.setUserField(uid, plugin.name + 'Id', payload.id);
                     db.setObjectField(plugin.name + 'Id:uid', payload.id, uid);
 
+                    if(payload.hasOwnProperty('facebook_id')){
+                        payload.picture = 'https://graph.facebook.com/v2.8/'+payload['facebook_id']+'/picture';
+                    };
+
                     if (payload.picture) {
                         User.setUserField(uid, 'uploadedpicture', payload.picture);
                         User.setUserField(uid, 'picture', payload.picture);
