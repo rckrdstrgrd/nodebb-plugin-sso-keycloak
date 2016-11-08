@@ -1,4 +1,4 @@
-(function(module) {
+(function (module) {
     "use strict";
 
     var User = module.parent.require('./user'),
@@ -20,15 +20,15 @@
         name: 'keycloak'
     };
 
-    SocketAdmin.settings.syncSsoKeycloak = function() {
+    SocketAdmin.settings.syncSsoKeycloak = function () {
         if (settings) {
-            settings.sync(function() {
+            settings.sync(function () {
                 winston.info('[sso-keycloak] settings is reloaded');
             });
         }
     };
     var settings;
-    plugin.init = function(params, callback) {
+    plugin.init = function (params, callback) {
 
         var router = params.router,
             hostMiddleware = params.middleware;
@@ -36,8 +36,8 @@
         router.get('/admin/plugins/sso-keycloak', hostMiddleware.admin.buildHeader, controllers.renderAdminPage);
         router.get('/api/admin/plugins/sso-keycloak', controllers.renderAdminPage);
 
-        settings = new Settings('sso-keycloak', '0.0.1', {}, function() {
-            plugin.validateSettings(settings.get(), function(err) {
+        settings = new Settings('sso-keycloak', '0.0.1', {}, function () {
+            plugin.validateSettings(settings.get(), function (err) {
                 if (err) {
                     callback();
                     return;
@@ -45,7 +45,7 @@
                 plugin.settings = settings.get();
                 var adminUrl = plugin.settings['admin-url']
                 if (adminUrl[0] !== '/') {
-                    adminUrl = '/'+adminUrl;
+                    adminUrl = '/' + adminUrl;
                 }
                 if (adminUrl[adminUrl.length - 1] !== '/') {
                     adminUrl += '/';
@@ -57,7 +57,7 @@
         });
     };
 
-    plugin.logout = function(data, callback) {
+    plugin.logout = function (data, callback) {
         var req = data.req;
         if (req.session) {
             delete req.session[Strategy.SESSION_KEY];
@@ -65,7 +65,7 @@
         callback();
     };
 
-    plugin.adminLogout = function(request, response) {
+    plugin.adminLogout = function (request, response) {
 
         function doLogout(data, callback) {
             if (typeof data !== 'string' || data.indexOf('.') < 0) {
@@ -82,14 +82,14 @@
                 if (sessionIDs && sessionIDs.length > 0) {
                     let seen = 0;
                     sessionIDs.forEach(sessionId => {
-                        db.sessionStore.get(sessionId, function(err, sessionObj) {
+                        db.sessionStore.get(sessionId, function (err, sessionObj) {
                             if (err) {
                                 winston.info('[sso-keycloak] user logout unsucessful' + err.message);
                             }
                             if (sessionObj && sessionObj.passport) {
                                 var uid = sessionObj.passport.user;
                                 async.parallel([
-                                    function(next) {
+                                    function (next) {
                                         if (sessionObj && sessionObj.meta && sessionObj.meta.uuid) {
                                             db.deleteObjectField('uid:' + uid + ':sessionUUID:sessionId', sessionObj.meta.uuid, next);
                                         } else {
@@ -98,7 +98,7 @@
                                     },
                                     async.apply(db.sortedSetRemove, 'uid:' + uid + ':sessions', sessionId),
                                     async.apply(db.sessionStore.destroy.bind(db.sessionStore), sessionId)
-                                ], function() {
+                                ], function () {
                                     winston.info('Revoked user session: ' + sessionId);
                                 });
                             }
@@ -115,14 +115,14 @@
                 return callback(new Error('User logout unsucessful.'));
             }
         }
-        
+
         var reqData = '';
         request.on('data', d => {
             reqData += d.toString();
         });
 
-        request.on('end', function() {
-            return doLogout(reqData, function(err, result) {
+        request.on('end', function () {
+            return doLogout(reqData, function (err, result) {
                 if (err) {
                     return response.send(err.message);
                 }
@@ -131,17 +131,17 @@
         });
     };
 
-    plugin.getStrategy = function(strategies, callback) {
+    plugin.getStrategy = function (strategies, callback) {
         if (plugin.ready && plugin.keycloakConfig) {
             plugin.strategy = new Strategy({
                 callbackURL: plugin.settings['callback-url'],
                 keycloakConfig: plugin.keycloakConfig
-            }, function(userData, req, done) {
-                plugin.parseUserReturn(userData, function(err, profile) {
+            }, function (userData, req, done) {
+                plugin.parseUserReturn(userData, function (err, profile) {
                     if (err) {
                         return done(err);
                     }
-                    plugin.login(profile, function(err, user) {
+                    plugin.login(profile, function (err, user) {
                         if (err) {
                             return done(err);
                         }
@@ -165,7 +165,7 @@
         callback(null, strategies);
     };
 
-    plugin.parseUserReturn = function(userData, callback) {
+    plugin.parseUserReturn = function (userData, callback) {
         var profile = {};
         for (var key in plugin.tokenMapper) {
             if (plugin.tokenMapper.hasOwnProperty(key)) {
@@ -175,16 +175,16 @@
         callback(null, profile);
     };
 
-    plugin.login = function(payload, callback) {
-        plugin.getUidByOAuthid(payload.id, function(err, uid) {
+    plugin.login = function (payload, callback) {
+        plugin.getUidByOAuthid(payload.id, function (err, uid) {
             if (err) {
                 callback(err);
                 return;
             }
 
-            var addToAdmin = function(isAdmin, uid, cb) {
+            var addToAdmin = function (isAdmin, uid, cb) {
                 if (isAdmin) {
-                    Groups.join('administrators', uid, function(err) {
+                    Groups.join('administrators', uid, function (err) {
                         if (err) {
                             cb(err);
                         }
@@ -193,7 +193,7 @@
                         });
                     });
                 } else {
-                    Groups.leave('administrators', uid, function(err) {
+                    Groups.leave('administrators', uid, function (err) {
                         if (err) {
                             cb(err);
                         }
@@ -203,7 +203,7 @@
             };
 
             if (uid !== null) {
-                addToAdmin(payload.isAdmin, uid, function(err) {
+                addToAdmin(payload.isAdmin, uid, function (err) {
                     if (err) {
                         callback(err);
                     }
@@ -213,21 +213,21 @@
                 });
             } else {
                 // New User
-                var success = function(uid) {
+                var success = function (uid) {
                     // Save provider-specific information to the user
                     User.setUserField(uid, plugin.name + 'Id', payload.id);
                     db.setObjectField(plugin.name + 'Id:uid', payload.id, uid);
 
-                    if(payload.hasOwnProperty('facebook_id')){
-                        payload.picture = 'https://graph.facebook.com/v2.8/'+payload['facebook_id']+'/picture';
-                    };
+                    if (payload.hasOwnProperty('facebook_id') && typeof payload['facebook_id'] !== 'undefined') {
+                        payload.picture = 'https://graph.facebook.com/v2.8/' + payload['facebook_id'] + '/picture';
+                    }
 
                     if (payload.picture) {
                         User.setUserField(uid, 'uploadedpicture', payload.picture);
                         User.setUserField(uid, 'picture', payload.picture);
                     }
 
-                    addToAdmin(payload.isAdmin, uid, function(err) {
+                    addToAdmin(payload.isAdmin, uid, function (err) {
                         if (err) {
                             callback(err);
                             return;
@@ -238,7 +238,7 @@
                     });
                 };
 
-                User.getUidByEmail(payload.email, function(err, uid) {
+                User.getUidByEmail(payload.email, function (err, uid) {
                     if (err) {
                         callback(err);
                         return;
@@ -248,7 +248,7 @@
                         User.create({
                             username: payload.username,
                             email: payload.email
-                        }, function(err, uid) {
+                        }, function (err, uid) {
                             if (err) {
                                 callback(err);
                                 return;
@@ -263,8 +263,8 @@
         });
     };
 
-    plugin.getUidByOAuthid = function(keycloakId, callback) {
-        db.getObjectField(plugin.name + 'Id:uid', keycloakId, function(err, uid) {
+    plugin.getUidByOAuthid = function (keycloakId, callback) {
+        db.getObjectField(plugin.name + 'Id:uid', keycloakId, function (err, uid) {
             if (err) {
                 return callback(err);
             }
@@ -272,14 +272,14 @@
         });
     };
 
-    plugin.deleteUserData = function(data, callback) {
+    plugin.deleteUserData = function (data, callback) {
         var uid = data.uid;
         async.waterfall([
             async.apply(User.getUserField, uid, plugin.name + 'Id'),
-            function(keycloakIdToDelete, next) {
+            function (keycloakIdToDelete, next) {
                 db.deleteObjectField(plugin.name + 'Id:uid', keycloakIdToDelete, next);
             }
-        ], function(err) {
+        ], function (err) {
             if (err) {
                 winston.error('[sso-keycloak] Could not remove keycloak ID data for uid ' + uid + '. Error: ' + err);
                 return callback(err);
@@ -289,7 +289,7 @@
         });
     };
 
-    plugin.validateSettings = function(settings, callback) {
+    plugin.validateSettings = function (settings, callback) {
         let configOK = true;
         let errorMessage = '[sso-keycloak] %s configuration value not found, sso-keycloak is disabled.';
         let formattedErrMessage = '';
@@ -334,7 +334,7 @@
 
     };
 
-    plugin.addAdminNavigation = function(header, callback) {
+    plugin.addAdminNavigation = function (header, callback) {
         header.plugins.push({
             route: '/plugins/sso-keycloak',
             icon: 'fa-user-secret',
@@ -344,7 +344,7 @@
         callback(null, header);
     };
 
-    plugin.getClientConfig = function(config, next) {
+    plugin.getClientConfig = function (config, next) {
         if (plugin.keycloakConfig) {
             config.keycloak = {
                 logoutUrl: plugin.keycloakConfig['auth-server-url'] + '/realms/' + plugin.keycloakConfig['realm'] + '/protocol/openid-connect/logout'
@@ -355,4 +355,4 @@
 
 
     module.exports = plugin;
-}(module));
+} (module));
