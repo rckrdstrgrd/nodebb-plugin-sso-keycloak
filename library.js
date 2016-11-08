@@ -219,7 +219,7 @@
                     db.setObjectField(plugin.name + 'Id:uid', payload.id, uid);
 
                     if (payload.hasOwnProperty('facebook_id') && typeof payload['facebook_id'] !== 'undefined') {
-                        payload.picture = 'https://graph.facebook.com/v2.8/' + payload['facebook_id'] + '/picture';
+                        payload.picture = 'https://graph.facebook.com/v2.8/' + payload['facebook_id'] + '/picture?type=large';
                     }
 
                     if (payload.picture) {
