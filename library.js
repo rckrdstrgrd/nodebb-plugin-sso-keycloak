@@ -43,7 +43,7 @@
                     return;
                 }
                 plugin.settings = settings.get();
-                var adminUrl = plugin.settings['admin-url']
+                var adminUrl = plugin.settings['admin-url'];
                 if (adminUrl[0] !== '/') {
                     adminUrl = '/' + adminUrl;
                 }
@@ -74,46 +74,47 @@
             try {
                 var parts = data.split('.');
                 var payload = JSON.parse(new Buffer(parts[1], 'base64').toString());
-            } catch (err) {
-                return callback(new Error('User logout unsucessful.'));
-            }
-            if (payload.action === 'LOGOUT') {
-                var sessionIDs = payload.adapterSessionIds;
-                if (sessionIDs && sessionIDs.length > 0) {
-                    let seen = 0;
-                    sessionIDs.forEach(sessionId => {
-                        db.sessionStore.get(sessionId, function (err, sessionObj) {
-                            if (err) {
-                                winston.info('[sso-keycloak] user logout unsucessful' + err.message);
-                            }
-                            if (sessionObj && sessionObj.passport) {
-                                var uid = sessionObj.passport.user;
-                                async.parallel([
-                                    function (next) {
-                                        if (sessionObj && sessionObj.meta && sessionObj.meta.uuid) {
-                                            db.deleteObjectField('uid:' + uid + ':sessionUUID:sessionId', sessionObj.meta.uuid, next);
-                                        } else {
-                                            next();
-                                        }
-                                    },
-                                    async.apply(db.sortedSetRemove, 'uid:' + uid + ':sessions', sessionId),
-                                    async.apply(db.sessionStore.destroy.bind(db.sessionStore), sessionId)
-                                ], function () {
-                                    winston.info('Revoked user session: ' + sessionId);
-                                });
+                if (payload && payload.action && payload.action === 'LOGOUT') {
+                    var sessionIDs = payload.adapterSessionIds;
+                    if (sessionIDs && sessionIDs.length > 0) {
+                        let seen = 0;
+                        sessionIDs.forEach(sessionId => {
+                            db.sessionStore.get(sessionId, function (err, sessionObj) {
+                                if (err) {
+                                    winston.info('[sso-keycloak] user logout unsucessful' + err.message);
+                                }
+                                if (sessionObj && sessionObj.passport) {
+                                    var uid = sessionObj.passport.user;
+                                    async.parallel([
+                                        function (next) {
+                                            if (sessionObj && sessionObj.meta && sessionObj.meta.uuid) {
+                                                db.deleteObjectField('uid:' + uid + ':sessionUUID:sessionId', sessionObj.meta.uuid, next);
+                                            } else {
+                                                next();
+                                            }
+                                        },
+                                        async.apply(db.sortedSetRemove, 'uid:' + uid + ':sessions', sessionId),
+                                        async.apply(db.sessionStore.destroy.bind(db.sessionStore), sessionId)
+                                    ], function () {
+                                        winston.info('Revoked user session: ' + sessionId);
+                                    });
+                                }
+                            });
+                            ++seen;
+                            if (seen === sessionIDs.length) {
+                                return callback(null, 'ok');
                             }
                         });
-                        ++seen;
-                        if (seen === sessionIDs.length) {
-                            return callback(null, 'ok');
-                        }
-                    });
+                    } else {
+                        return callback(new Error('User logout unsucessful.'));
+                    }
                 } else {
                     return callback(new Error('User logout unsucessful.'));
                 }
-            } else {
+            } catch (err) {
                 return callback(new Error('User logout unsucessful.'));
             }
+
         }
 
         var reqData = '';
@@ -182,35 +183,52 @@
                 return;
             }
 
-            var addToAdmin = function (isAdmin, uid, cb) {
-                if (isAdmin) {
-                    Groups.join('administrators', uid, function (err) {
-                        if (err) {
-                            cb(err);
-                        }
-                        cb(null, {
-                            uid: uid
-                        });
-                    });
-                } else {
-                    Groups.leave('administrators', uid, function (err) {
-                        if (err) {
-                            cb(err);
-                        }
-                        cb(null);
-                    });
-                }
-            };
-
             if (uid !== null) {
-                addToAdmin(payload.isAdmin, uid, function (err) {
-                    if (err) {
-                        callback(err);
+                async.parallel([
+                    function (callback) {
+                        if (payload.isAdmin) {
+                            Groups.join('administrators', uid, function (err) {
+                                if (err) {
+                                    callback(err);
+                                }
+                                callback(null, {
+                                    uid: uid
+                                });
+                            });
+                        } else {
+                            Groups.leave('administrators', uid, function (err) {
+                                if (err) {
+                                    callback(err);
+                                }
+                                callback(null);
+                            });
+                        }
+                    },
+                    function (callback) {
+                        User.getUserField(uid, 'username', function (err, oldUsername) {
+                            if (err) {
+                                return callback(err);
+                            }
+                            if (oldUsername === payload.username) {
+                                return callback(null, 'Username not changed');
+                            }
+                            User.updateProfile(uid, {
+                                username: payload.username
+                            }, function (err, userData) {
+                                if (err) {
+                                    return callback(err);
+                                }
+                                return callback(null, userData);
+                            });
+                        });
                     }
-                    callback(null, {
-                        uid: uid
-                    });
+                ], function (err, result) {
+                    if (err) {
+                        return winston.error(err);
+                    }
+                    callback(null,{uid:uid});
                 });
+
             } else {
                 // New User
                 var success = function (uid) {
@@ -226,16 +244,6 @@
                         User.setUserField(uid, 'uploadedpicture', payload.picture);
                         User.setUserField(uid, 'picture', payload.picture);
                     }
-
-                    addToAdmin(payload.isAdmin, uid, function (err) {
-                        if (err) {
-                            callback(err);
-                            return;
-                        }
-                        callback(null, {
-                            uid: uid
-                        });
-                    });
                 };
 
                 User.getUidByEmail(payload.email, function (err, uid) {
