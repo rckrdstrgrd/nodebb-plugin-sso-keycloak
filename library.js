@@ -340,7 +340,7 @@
         try {
             plugin.validRedirects = settings['valid-redirects'].split(',');
         } catch (e) {
-            winston.error('[sso-keycloak] ' + e.message);
+            winston.warn('[sso-keycloak] validRedirects setting: ' + e.message);
             plugin.validRedirects = [];
         }
 

@@ -8,7 +8,7 @@
 			</div>
 			<div class="form-group">
   				<label>Valid redirect hostnames. Seperate with comma (,)</label>
-  				<textarea class="form-control" rows="1" data-key="valid-redirects "></textarea>
+  				<textarea class="form-control" rows="1" data-key="valid-redirects"></textarea>
 			</div>	
 			<div class="form-group">
 				<label>Callback URL</label>
