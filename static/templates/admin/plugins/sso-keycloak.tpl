@@ -4,7 +4,7 @@
 		<div class="col-sm-10 col-xs-12">
 			<div class="form-group">
   				<label>Keycloak OIDC JSON</label>
-  				<textarea class="form-control" rows="8" data-key="keycloak-config"></textarea>
+  				<textarea class="form-control" rows="10" data-key="keycloak-config"></textarea>
 			</div>
 			<div class="form-group">
   				<label>Valid redirect hostnames. Seperate with comma (,)</label>
