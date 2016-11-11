@@ -5,6 +5,10 @@
 			<div class="form-group">
   				<label>Keycloak OIDC JSON</label>
   				<textarea class="form-control" rows="8" data-key="keycloak-config"></textarea>
+			</div>
+			<div class="form-group">
+  				<label>Valid redirect hostnames. Seperate with comma (,)</label>
+  				<textarea class="form-control" rows="1" data-key="valid-redirects "></textarea>
 			</div>	
 			<div class="form-group">
 				<label>Callback URL</label>

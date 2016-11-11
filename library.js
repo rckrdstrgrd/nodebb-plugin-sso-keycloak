@@ -136,7 +136,8 @@
         if (plugin.ready && plugin.keycloakConfig) {
             plugin.strategy = new Strategy({
                 callbackURL: plugin.settings['callback-url'],
-                keycloakConfig: plugin.keycloakConfig
+                keycloakConfig: plugin.keycloakConfig,
+                validRedirectsHosts: plugin.validRedirects
             }, function (userData, req, done) {
                 plugin.parseUserReturn(userData, function (err, profile) {
                     if (err) {
@@ -226,7 +227,7 @@
                     if (err) {
                         return winston.error(err);
                     }
-                    callback(null,{uid:uid});
+                    callback(null, { uid: uid });
                 });
 
             } else {
@@ -244,7 +245,7 @@
                         User.setUserField(uid, 'uploadedpicture', payload.picture);
                         User.setUserField(uid, 'picture', payload.picture);
                     }
-                    callback(null,{uid:uid});
+                    callback(null, { uid: uid });
                 };
 
                 User.getUidByEmail(payload.email, function (err, uid) {
@@ -335,6 +336,13 @@
                 configOK = false;
             }
         });
+
+        try {
+            plugin.validRedirects = settings['valid-redirects'].split(',');
+        } catch (e) {
+            winston.error('[sso-keycloak] ' + e.message);
+            plugin.validRedirects = [];
+        }
 
         winston.info('[sso-keycloak] Settings OK');
         plugin.settings = settings;
