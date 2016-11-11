@@ -244,6 +244,7 @@
                         User.setUserField(uid, 'uploadedpicture', payload.picture);
                         User.setUserField(uid, 'picture', payload.picture);
                     }
+                    callback(null,{uid:uid});
                 };
 
                 User.getUidByEmail(payload.email, function (err, uid) {
