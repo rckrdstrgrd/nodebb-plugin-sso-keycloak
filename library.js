@@ -11,7 +11,8 @@
         format = require('util').format,
         SocketAdmin = module.parent.require('./socket.io/admin'),
         Settings = module.parent.require('./settings'),
-        Strategy = require('passport-keycloak');
+        Strategy = require('passport-keycloak'),
+        nconf = module.parent.require('nconf');
 
     var authenticationController = module.parent.require('./controllers/authentication');
 
@@ -344,12 +345,34 @@
             plugin.validRedirects = [];
         }
 
+        if (nconf.get('REALM_PUBLIC_KEY')) {
+            winston.info('[sso-keycloak] realm-public-key override from environment variable');
+            plugin.keycloakConfig['realm-public-key'] = nconf.get('REALM_PUBLIC_KEY');
+        }
+
+        if (nconf.get('REALM')) {
+            winston.info('[sso-keycloak] realm override from environment variable');
+            plugin.keycloakConfig['realm'] = nconf.get('REALM');
+        }
+
+        if (nconf.get('KEYCLOAK_RESOURCE')) {
+            winston.info('[sso-keycloak] resource override from environment variable');
+            plugin.keycloakConfig['resource'] = nconf.get('KEYCLOAK_RESOURCE');
+        }
+
+        if (nconf.get('AUTH_SERVER_URL')) {
+            winston.info('[sso-keycloak] auth-server-url override from environment variable');
+            plugin.keycloakConfig['auth-server-url'] = nconf.get('AUTH_SERVER_URL');
+        }
+
         winston.info('[sso-keycloak] Settings OK');
         plugin.settings = settings;
         plugin.ready = true;
         callback();
 
     };
+
+
 
     plugin.addAdminNavigation = function (header, callback) {
         header.plugins.push({
