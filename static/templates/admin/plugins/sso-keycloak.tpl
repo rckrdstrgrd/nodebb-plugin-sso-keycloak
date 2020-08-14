@@ -22,6 +22,10 @@
   				<label>Token mapping</label>
   				<textarea class="form-control" rows="8" data-key="token-mapper"></textarea>
 			</div>
+			<div class="form-group">
+  				<label>Client role to group mapping. Format JSON.</label>
+  				<textarea class="form-control" rows="8" data-key="client-role-to-group-mapper"></textarea>
+			</div>
 		</div>
 	</div>
 </form>
