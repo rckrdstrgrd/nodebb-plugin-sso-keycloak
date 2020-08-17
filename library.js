@@ -210,7 +210,9 @@
       var clients = Object.keys(plugin.clientRoleToGroupMapper);
       for (let i = 0; i < clients.length; i++) {
         var client = clients[i];
-        profile.joinGroups = profile.joinGroups.concat(access[client].roles);
+        if (access[client]) {
+          profile.joinGroups = profile.joinGroups.concat(access[client].roles);
+        }
       }
       profile.leaveGroups = plugin.allRoleGroups.filter(function (role) {
         return profile.joinGroups.indexOf(role) == -1;
