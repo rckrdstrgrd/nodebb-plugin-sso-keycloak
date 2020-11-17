@@ -1,6 +1,6 @@
 {
   "name": "nodebb-plugin-sso-keycloak",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "NodeBB Keycloak SSO",
   "main": "library.js",
   "keywords": [
@@ -20,7 +20,7 @@
   "readme": "",
   "readmeFilename": "README.md",
   "dependencies": {
-    "passport-keycloak": "rckrdstrgrd/passport-keycloak"
+    "passport-keycloak": "rckrdstrgrd/passport-keycloak#c0d03fab59b2d3fc2e1e389470d427eba2a4ed5b"
   },
   "nbbpm": {
     "compatibility": "^1.0.1",
