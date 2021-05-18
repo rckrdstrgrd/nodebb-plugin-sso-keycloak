@@ -364,7 +364,7 @@
           if (!uid) {
             User.create(
               {
-                username: payload.username | `${payload.given_name}`,
+                username: payload.username || `${payload.given_name}`,
                 email: payload.email,
               },
               function (err, uid) {
