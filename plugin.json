@@ -1,36 +1,43 @@
 {
-    "id": "nodebb-plugin-sso-keycloak",
-    "name": "NodeBB SSO Keycloak",
-    "description": "NodeBB Plugin that allows users to login/register via Keycloak",
-    "url": "https://github.com/rckrdstrgrd/nodebb-plugin-sso-keycloak",
-    "library": "./library.js",
-    "hooks": [{
-        "hook": "static:app.load",
-        "method": "init"
-    }, {
-        "hook": "filter:admin.header.build",
-        "method": "addAdminNavigation"
-    }, {
-        "hook": "static:user.delete",
-        "method": "deleteUserData"
-    }, {
-        "hook": "filter:auth.init",
-        "method": "getStrategy"
-    }, {
-        "hook": "static:user.loggedOut",
-        "method": "logout"
-    }, {
-        "hook": "filter:config.get",
-        "method": "getClientConfig"
-    }],
-    "staticDirs": {
-        "static": "./static"
+  "id": "nodebb-plugin-sso-keycloak",
+  "name": "NodeBB SSO Keycloak",
+  "description": "NodeBB Plugin that allows users to login/register via Keycloak",
+  "url": "https://github.com/rckrdstrgrd/nodebb-plugin-sso-keycloak",
+  "library": "./library.js",
+  "hooks": [
+    {
+      "hook": "static:app.load",
+      "method": "init"
     },
-    "scripts": [
-        "static/lib/main.js"
-    ],
-    "acpScripts": [
-        "static/lib/admin.js"
-    ],
-    "templates": "static/templates"
+    {
+      "hook": "filter:admin.header.build",
+      "method": "addAdminNavigation"
+    },
+    {
+      "hook": "static:user.delete",
+      "method": "deleteUserData"
+    },
+    {
+      "hook": "filter:auth.init",
+      "method": "getStrategy"
+    },
+    {
+      "hook": "static:user.loggedOut",
+      "method": "logout"
+    },
+    {
+      "hook": "filter:config.get",
+      "method": "getClientConfig"
+    },
+    {
+      "hook": "filter:user.logout",
+      "method": "redirectLogout"
+    }
+  ],
+  "staticDirs": {
+    "static": "./static"
+  },
+  "scripts": [],
+  "acpScripts": ["static/lib/admin.js"],
+  "templates": "static/templates"
 }

@@ -1,35 +1,28 @@
 (function (module) {
   "use strict";
 
-  var User = module.parent.require("./user"),
-    Groups = module.parent.require("./groups"),
-    db = module.parent.require("../src/database"),
-    passport = module.parent.require("passport"),
-    winston = module.parent.require("winston"),
-    async = module.parent.require("async"),
-    controllers = require("./lib/controllers"),
-    format = require("util").format,
-    SocketAdmin = module.parent.require("./socket.io/admin"),
-    Settings = module.parent.require("./settings"),
-    Strategy = require("passport-keycloak"),
-    nconf = module.parent.require("nconf");
+  const format = require("util").format;
+  const Strategy = require("./lib/strategy");
 
-  var authenticationController = module.parent.require(
-    "./controllers/authentication"
+  const User = require.main.require("./src/user");
+  const Groups = require.main.require("./src/groups");
+  const db = require.main.require("./src/database");
+  const authenticationController = require.main.require(
+    "./src/controllers/authentication"
   );
+  const Settings = require.main.require("./src/settings");
+  const passport = module.parent.require("passport");
+  const winston = module.parent.require("winston");
+  const async = module.parent.require("async");
+  const nconf = module.parent.require("nconf");
+
+  const controllers = require("./lib/controllers");
 
   var plugin = {
     ready: false,
     name: "keycloak",
   };
 
-  SocketAdmin.settings.syncSsoKeycloak = function () {
-    if (settings) {
-      settings.sync(function () {
-        winston.info("[sso-keycloak] settings is reloaded");
-      });
-    }
-  };
   var settings;
   plugin.init = function (params, callback) {
     var router = params.router,
@@ -78,7 +71,7 @@
       }
       try {
         var parts = data.split(".");
-        var payload = JSON.parse(new Buffer(parts[1], "base64").toString());
+        var payload = JSON.parse(Buffer.from(parts[1], "base64").toString());
         if (payload && payload.action && payload.action === "LOGOUT") {
           var sessionIDs = payload.adapterSessionIds;
           if (sessionIDs && sessionIDs.length > 0) {
@@ -530,17 +523,22 @@
     callback(null, header);
   };
 
+  function getLogoutUrl() {
+    return `${plugin.keycloakConfig["auth-server-url"]}/realms/${plugin.keycloakConfig.realm}/protocol/openid-connect/logout`;
+  }
+
   plugin.getClientConfig = function (config, next) {
     if (plugin.keycloakConfig) {
       config.keycloak = {
-        logoutUrl:
-          plugin.keycloakConfig["auth-server-url"] +
-          "/realms/" +
-          plugin.keycloakConfig["realm"] +
-          "/protocol/openid-connect/logout",
+        logoutUrl: getLogoutUrl(),
       };
     }
     next(null, config);
+  };
+
+  plugin.redirectLogout = function (payload, callback) {
+    payload.next = `${getLogoutUrl()}?redirect_uri=${nconf.get("url")}`;
+    return callback(null, payload);
   };
 
   module.exports = plugin;
