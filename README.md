@@ -1,4 +1,3 @@
 # NodeBB SSO Keycloak
 
-NodeBB Plugin that allows users to login/register via Keycloak. 
-THIS PROJECT NOT MAINTAINED
+THIS PROJECT NOT MAINTAINED. NodeBB Plugin that allows users to login/register via Keycloak. 
