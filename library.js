@@ -186,6 +186,7 @@
         "[sso-keycloak] Configuration is invalid, plugin will not be actived."
       );
     }
+
     callback(null, strategies);
   };
 
@@ -279,9 +280,7 @@
                 }
                 User.updateProfile(
                   uid,
-                  {
-                    username: payload.username,
-                  },
+                  { uid, username: payload.username },
                   function (err, userData) {
                     if (err) {
                       return callback(err);
@@ -294,7 +293,8 @@
           ],
           function (err, result) {
             if (err) {
-              return winston.error(err);
+              console.error(err);
+              return callback(err);
             }
             callback(null, { uid: uid });
           }
