@@ -537,8 +537,27 @@
   };
 
   plugin.redirectLogout = function (payload, callback) {
-    payload.next = `${getLogoutUrl()}?redirect_uri=${nconf.get("url")}`;
+    payload.next = `${getLogoutUrl()}?post_logout_redirect_uri=${nconf.get(
+      "url"
+    )}`;
     return callback(null, payload);
+  };
+
+  plugin.redirectLogoutWithIdHint = function (
+    { req, res, uid, sessionID },
+    callback
+  ) {
+    let idTokenHint = null;
+    if (req.kauth.grant) {
+      idTokenHint = req.kauth.grant.id_token.token;
+      req.kauth.grant.unstore(req, res);
+      delete request.kauth.grant;
+    }
+    const keycloakLogoutUrl = plugin.strategy.logoutUrl(
+      nconf.get("url"),
+      idTokenHint
+    );
+    res.redirect(keycloakLogoutUrl);
   };
 
   module.exports = plugin;

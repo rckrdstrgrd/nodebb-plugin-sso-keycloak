@@ -32,6 +32,9 @@
     {
       "hook": "filter:user.logout",
       "method": "redirectLogout"
+    },
+    { "hook": "static:user.loggedOut",
+      "method": "redirectLogoutWithIdHint" 
     }
   ],
   "staticDirs": {
