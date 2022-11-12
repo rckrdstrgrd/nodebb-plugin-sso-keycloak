@@ -133,7 +133,7 @@ clean-stack@^2.0.0:
 concat-map@0.0.1:
   version "0.0.1"
   resolved "https://registry.yarnpkg.com/concat-map/-/concat-map-0.0.1.tgz#d8a96bd77fd68df7793a73036a3ba0d5405d477b"
-  integrity sha1-2Klr13/Wjfd5OnMDajug1UBdR3s=
+  integrity sha512-/Srv4dswyQNBfohGpz9o6Yb3Gz3SrUDqBH5rTuhGR7ahtlbYKnVxw2bCFMRljaA7EXHaXZ8wsHdodFvbkhKmqg==
 
 debug@4, debug@^4.1.1:
   version "4.3.3"
@@ -394,10 +394,10 @@ jwk-to-pem@^2.0.0:
     elliptic "^6.5.4"
     safe-buffer "^5.0.1"
 
-keycloak-connect@^15.1.0:
-  version "15.1.0"
-  resolved "https://registry.yarnpkg.com/keycloak-connect/-/keycloak-connect-15.1.0.tgz#bbdaf5031adfad1bdceee91cc1a86be084facac5"
-  integrity sha512-j+vrXp4DiODyCCmGGWl5V55Mv/clqRPP0IXkMV07zVWeCYqyx53zt092rJ35quXXZBK9KnQm+ulAWA9bwsnTBw==
+keycloak-connect@^19.0.2:
+  version "19.0.3"
+  resolved "https://registry.yarnpkg.com/keycloak-connect/-/keycloak-connect-19.0.3.tgz#9758024246c1c35e7f7d146299e3081a289a8bde"
+  integrity sha512-unZDlBHO9RJILM9hngJ7tLMK79pTLpLmQr18IFUtIrAQxfYatGm4tTP8zGaPaVwm48GZhOAl4dRpe0yw+Mlwcg==
   dependencies:
     jwk-to-pem "^2.0.0"
   optionalDependencies:
@@ -427,9 +427,9 @@ minimalistic-crypto-utils@^1.0.1:
   integrity sha1-9sAMHAsIIkblxNmd+4x8CDsrWCo=
 
 minimatch@^3.0.4:
-  version "3.0.4"
-  resolved "https://registry.yarnpkg.com/minimatch/-/minimatch-3.0.4.tgz#5166e286457f03306064be5497e8dbb0c3d32083"
-  integrity sha512-yJHVQEhyqPLUTgt9B83PXu6W3rx4MvvHvSUvToogpwoGDOUQ+yDrR0HRot+yOCdCO7u4hX3pWft6kWBBcqh0UA==
+  version "3.1.2"
+  resolved "https://registry.yarnpkg.com/minimatch/-/minimatch-3.1.2.tgz#19cd194bfd3e428f049a70817c038d89ab4be35b"
+  integrity sha512-J7p63hRiAjw1NDEww1W7i37+ByIrOWO5XQQAzZ3VOcL0PNybwpfmV/N05zFAzwQ9USyEcX6t3UO+K5aqBQOIHw==
   dependencies:
     brace-expansion "^1.1.7"
 
