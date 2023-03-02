@@ -20,7 +20,7 @@
   "readme": "",
   "readmeFilename": "README.md",
   "dependencies": {
-    "keycloak-connect": "^19.0.2",
+    "keycloak-connect": "^21.0.1",
     "uuid": "^8.3.2"
   },
   "nbbpm": {
