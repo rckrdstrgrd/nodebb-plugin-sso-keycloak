@@ -29,13 +29,8 @@
       "hook": "filter:config.get",
       "method": "getClientConfig"
     },
-    {
-      "hook": "filter:user.logout",
-      "method": "redirectLogout"
-    },
-    { "hook": "static:user.loggedOut",
-      "method": "redirectLogoutWithIdHint" 
-    }
+
+    { "hook": "static:user.loggedOut", "method": "redirectLogoutWithIdHint" }
   ],
   "staticDirs": {
     "static": "./static"

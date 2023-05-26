@@ -548,10 +548,11 @@
     callback
   ) {
     let idTokenHint = null;
-    if (req.kauth.grant) {
-      idTokenHint = req.kauth.grant.id_token.token;
-      req.kauth.grant.unstore(req, res);
-      delete request.kauth.grant;
+    if (req.session && req.session[Strategy.SESSION_KEY]) {
+      const raw = req.session[Strategy.SESSION_KEY];
+      delete req.session[Strategy.SESSION_KEY];
+      const grant = JSON.parse(raw);
+      idTokenHint = grant.id_token;
     }
     const keycloakLogoutUrl = plugin.strategy.logoutUrl(
       nconf.get("url"),
@@ -559,6 +560,5 @@
     );
     res.redirect(keycloakLogoutUrl);
   };
-
   module.exports = plugin;
 })(module);
